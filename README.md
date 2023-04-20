@@ -8,3 +8,6 @@ First, this tool assumes you have the following deployed:
 2. The Extension attribute Id from Jamf
 3. Jamf Pro user with rights to read the LAPS password via API
 4. Mac enrolled with a LAPS password in its inventory
+
+
+![](https://github.com/kylejericson/Jamf-LAPS-Bootstrapper/blob/main/Jamf%20LAPS%20Bootstrapper.gif)
