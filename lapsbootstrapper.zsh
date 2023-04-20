@@ -1,16 +1,18 @@
 #!/bin/zsh
 # Created by Kyle Ericson and OpenAI
-# Version 1.1
+# Version 1.2
 
-dialog=$(/usr/local/bin/dialog)
+dialog="/usr/local/bin/dialog"
 
-if [[ -f "/usr/local/bin/dialog" ]]; then 
+if [[ -f "$dialog" ]]; then 
     echo "Installed"; 
 else  
     echo "Not Installed"
-    curl -L "https://github.com/bartreardon/swiftDialog/releases/download/v2.1.0/dialog-2.1.0-4148.pkg" -o /tmp/dialog-2.1.0-4148.pkg
-    /usr/sbin/installer -pkg /tmp/dialog-2.1.0-4148.pkg -target /
-
+    dialogURL=$(curl --silent --fail "https://api.github.com/repos/bartreardon/swiftDialog/releases/latest" | awk -F '"' "/browser_download_url/ && /pkg\"/ { print \$4; exit }")
+    /usr/bin/curl --location --silent "$dialogURL" -o "/tmp/Dialog.pkg"
+    /usr/sbin/installer -pkg "/tmp/Dialog.pkg" -target /
+    dialogVersion=$( /usr/local/bin/dialog --version )
+    echo "swiftDialog version ${dialogVersion} installed; proceeding..."
 fi
 
 # Define the file path for the saved credentials
