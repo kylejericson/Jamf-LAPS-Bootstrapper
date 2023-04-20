@@ -15,3 +15,6 @@ First, this tool assumes you have the following deployed:
 
 
 ![](https://github.com/kylejericson/Jamf-LAPS-Bootstrapper/blob/main/Jamf%20LAPS%20Bootstrapper.gif)
+
+When you check the checkbox to save creds they are saved here credsFile="$HOME/.jamfcreds"
+To remove them do a rm "$HOME/.jamfcreds"
