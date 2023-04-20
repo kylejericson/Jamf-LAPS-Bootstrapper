@@ -1,7 +1,11 @@
  Jamf LAPS Bootstrapper
+ 
 I wanted to make a tool to get the LAPS password from a Mac in Jamf using the free tool macOSLAPS.
+
 You can get this tool from here: https://github.com/joshua-d-miller/macOSLAPS
+
 Jamf Extension attribute: https://github.com/kylejericson/JAMF/blob/master/Computer%20Extension%20Attributes/LAPS%20Password.xml
+
 First, this tool assumes you have the following deployed:
 
 1. Jamf Pro with macOS LAPS setup and an extension attribute with the laps password
