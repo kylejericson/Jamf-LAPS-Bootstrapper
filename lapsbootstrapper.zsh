@@ -4,7 +4,6 @@
 
 dialog="/usr/local/bin/dialog"
 exitCode=""
-icon="/System/Library/CoreServices/CoreTypes.bundle/Contents/Resources/AlertStopIcon.icns"
 
 if [[ -f "$dialog" ]]; then 
     echo "Installed"; 
