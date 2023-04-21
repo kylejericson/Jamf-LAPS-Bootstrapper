@@ -69,7 +69,7 @@ echo $computerID
 
 if [[ -z ${computerID} ]]; then
 
-    echo "Error: Unable to determine jssID; exiting."
+    echo "Error: Unable to determine computerID; exiting."
     $dialog --title "LAPS Password Error" --button1text "Exit" --mini --message "\nComputer not found in Jamf. Please check serial number and try again." --icon /System/Library/CoreServices/CoreTypes.bundle/Contents/Resources/AlertStopIcon.icns -p
     
     exitCode="1"
