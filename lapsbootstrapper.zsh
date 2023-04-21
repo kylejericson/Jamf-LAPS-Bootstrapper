@@ -1,13 +1,19 @@
 #!/bin/zsh
 # Created by Kyle Ericson and OpenAI
-# Version 1.3
+# Version 1.4
 
 dialog="/usr/local/bin/dialog"
+exitCode=""
+icon="/System/Library/CoreServices/CoreTypes.bundle/Contents/Resources/AlertStopIcon.icns"
 
 if [[ -f "$dialog" ]]; then 
     echo "Installed"; 
 else  
     echo "Not Installed"
+    if [[ $(id -u) -ne 0 ]]; then
+        osascript -e 'tell app "System Events" to display dialog "This must be run as admin." giving up after (100) with title "LAPS Password Error" buttons {"Exit"} default button "Exit" with icon file "System:Library:CoreServices:CoreTypes.bundle:Contents:Resources:AlertStopIcon.icns"'
+        exit 1
+    fi
     dialogURL=$(curl --silent --fail "https://api.github.com/repos/bartreardon/swiftDialog/releases/latest" | awk -F '"' "/browser_download_url/ && /pkg\"/ { print \$4; exit }")
     /usr/bin/curl --location --silent "$dialogURL" -o "/tmp/Dialog.pkg"
     /usr/sbin/installer -pkg "/tmp/Dialog.pkg" -target /
@@ -56,12 +62,36 @@ if [[ $(/usr/bin/sw_vers -productVersion | awk -F . '{print $1}') -lt 12 ]]; the
 else
    api_token=$(/usr/bin/plutil -extract token raw -o - - <<< "$authToken")
 fi
-echo $api_token
+#echo $api_token
 
-LAPS_Password=$(curl -s -H "Authorization: Bearer $api_token" -H "Accept: application/xml" "$apiURL/JSSResource/computers/serialnumber/$serialNumber/subset/extension_attributes" | xpath -e '//extension_attribute[id='$jamfexid']' 2>&1 | awk -F'<value>|</value>' '{print $2}' | tail -n +1)
+computerID=$(/usr/bin/curl -s -H "Authorization: Bearer $api_token" -H "Accept: application/xml" "$apiURL/JSSResource/computers/serialnumber/$serialNumber/subset/general" | xpath -e '//computer/general/id/text()' )
 
-# Display the LAPS password and prompt the user to copy it or exit
-echo "$LAPS_Password" | pbcopy
+echo $computerID
 
-$dialog --title "LAPS Password" --button1text "Copy to macOS clipboard" --mini --message "The LAPS password is: $LAPS_Password" --icon /System/Library/CoreServices/CoreTypes.bundle/Contents/Resources/LockedIcon.icns -p 
-exit 0
+if [[ -z ${computerID} ]]; then
+
+    echo "Error: Unable to determine jssID; exiting."
+    $dialog --title "LAPS Password Error" --button1text "Exit" --mini --message "\nComputer not found in Jamf. Please check serial number and try again." --icon /System/Library/CoreServices/CoreTypes.bundle/Contents/Resources/AlertStopIcon.icns -p
+    
+    exitCode="1"
+
+else
+
+    LAPS_Password=$(curl -s -H "Authorization: Bearer $api_token" -H "Accept: application/xml" "$apiURL/JSSResource/computers/serialnumber/$serialNumber/subset/extension_attributes" | xpath -e '//extension_attribute[id='$jamfexid']' 2>&1 | awk -F'<value>|</value>' '{print $2}' | tail -n +1)
+
+    echo $LAPS_Password
+
+    # Display the LAPS password and prompt the user to copy it or exit
+    echo "$LAPS_Password" | pbcopy
+
+    $dialog --title "LAPS Password" --button1text "Copy to macOS clipboard" --mini --message "\nThe LAPS password is: $LAPS_Password" --icon /System/Library/CoreServices/CoreTypes.bundle/Contents/Resources/LockedIcon.icns -p
+
+    exitCode="0"
+
+fi
+
+# Invalidate the Bearer Token
+api_token=$(/usr/bin/curl "${apiURL}/api/v1/auth/invalidate-token" --silent --header "Authorization: Bearer ${api_token}" -X POST)
+api_token=""
+
+exit $exitCode
