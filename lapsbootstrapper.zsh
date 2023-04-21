@@ -1,6 +1,6 @@
 #!/bin/zsh
 # Created by Kyle Ericson and OpenAI
-# Version 1.2
+# Version 1.3
 
 dialog="/usr/local/bin/dialog"
 
@@ -63,5 +63,5 @@ LAPS_Password=$(curl -s -H "Authorization: Bearer $api_token" -H "Accept: applic
 # Display the LAPS password and prompt the user to copy it or exit
 echo "$LAPS_Password" | pbcopy
 
-$dialog --title "LAPS Password" --mini --message "The LAPS password is: $LAPS_Password" --icon /System/Library/CoreServices/CoreTypes.bundle/Contents/Resources/FileVaultIcon.icns -p
+$dialog --title "LAPS Password" --button1text "Copy to macOS clipboard" --mini --message "The LAPS password is: $LAPS_Password" --icon /System/Library/CoreServices/CoreTypes.bundle/Contents/Resources/LockedIcon.icns -p 
 exit 0
