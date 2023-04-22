@@ -78,7 +78,7 @@ else
 
     LAPS_Password=$(curl -s -H "Authorization: Bearer $api_token" -H "Accept: application/xml" "$apiURL/JSSResource/computers/serialnumber/$serialNumber/subset/extension_attributes" | xpath -e '//extension_attribute[id='$jamfexid']' 2>&1 | awk -F'<value>|</value>' '{print $2}' | tail -n +1)
 
-    echo $LAPS_Password
+    LAPS_Password=$(echo $LAPS_Password | sed "s/&amp;/\&/g" | sed "s/&lt;/\</g" | sed "s/&gt;/\>/g")
 
     # Display the LAPS password and prompt the user to copy it or exit
     echo "$LAPS_Password" | pbcopy
