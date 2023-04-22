@@ -1,6 +1,6 @@
 #!/bin/zsh
 # Created by Kyle Ericson and OpenAI
-# Version 1.4
+# Version 1.5
 
 dialog="/usr/local/bin/dialog"
 exitCode=""
