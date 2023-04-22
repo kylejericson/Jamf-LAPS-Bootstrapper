@@ -36,8 +36,13 @@ else
 fi
 
 # Define the file path for the saved credentials
-credsFile="$HOME/.jamfcreds"
-apiSaltsPassphrase="$HOME/.apisp"
+credsFile="$HOME/.jamfcred"
+apiSaltsPassphrase="$HOME/.jamfsp"
+
+# Delete old Jamf Creds file
+if [[ -f "$HOME/.jamfcreds" ]]; then
+  rm -rf "$HOME/.jamfcreds"
+fi
 
 # Check if the credentials are already saved
 if [ -f "$credsFile" ]; then
@@ -101,9 +106,9 @@ if [[ -z ${computerID} ]]; then
 
 else
 
-    LAPS_Password=$(curl -s -H "Authorization: Bearer $api_token" -H "Accept: application/xml" "$apiURL/JSSResource/computers/serialnumber/$serialNumber/subset/extension_attributes" | xpath -e '//extension_attribute[id='$jamfexid']' 2>&1 | awk -F'<value>|</value>' '{print $2}' | tail -n +1)
-
-    echo $LAPS_Password
+    LAPS_PasswordRaw=$(curl -s -H "Authorization: Bearer $api_token" -H "Accept: application/xml" "${apiURL}/JSSResource/computers/serialnumber/${serialNumber}/subset/extension_attributes" | xpath -e '//extension_attribute[id='$jamfexid']' 2>&1 | awk -F'<value>|</value>' '{print $2}' | tail -n +1)
+    
+    LAPS_Password=$(echo ${LAPS_PasswordRaw} | sed "s/&amp;/\&/g" | sed "s/&lt;/\</g" | sed "s/&gt;/\>/g" | sed 's/ //g')
 
     # Display the LAPS password and prompt the user to copy it or exit
     echo "${LAPS_Password}" | tr -d '\n' | pbcopy
