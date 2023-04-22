@@ -4,7 +4,6 @@
 
 dialog="/usr/local/bin/dialog"
 exitCode=""
-icon="/System/Library/CoreServices/CoreTypes.bundle/Contents/Resources/AlertStopIcon.icns"
 
 if [[ -f "$dialog" ]]; then 
     echo "Installed"; 
@@ -70,16 +69,16 @@ echo $computerID
 
 if [[ -z ${computerID} ]]; then
 
-    echo "Error: Unable to determine jssID; exiting."
+    echo "Error: Unable to determine computerID; exiting."
     $dialog --title "LAPS Password Error" --button1text "Exit" --mini --message "\nComputer not found in Jamf. Please check serial number and try again." --icon /System/Library/CoreServices/CoreTypes.bundle/Contents/Resources/AlertStopIcon.icns -p
     
     exitCode="1"
 
 else
 
-    LAPS_Password=$(curl -s -H "Authorization: Bearer $api_token" -H "Accept: application/xml" "$apiURL/JSSResource/computers/serialnumber/$serialNumber/subset/extension_attributes" | xpath -e '//extension_attribute[id='$jamfexid']' 2>&1 | awk -F'<value>|</value>' '{print $2}' | tail -n +1)
+    LAPS_PasswordRaw=$(curl -s -H "Authorization: Bearer $api_token" -H "Accept: application/xml" "$apiURL/JSSResource/computers/serialnumber/$serialNumber/subset/extension_attributes" | xpath -e '//extension_attribute[id='$jamfexid']' 2>&1 | awk -F'<value>|</value>' '{print $2}' | tail -n +1)
 
-    echo $LAPS_Password
+    LAPS_Password=$(echo $LAPS_PasswordRaw | sed "s/&amp;/\&/g" | sed "s/&lt;/\</g" | sed "s/&gt;/\>/g")
 
     # Display the LAPS password and prompt the user to copy it or exit
     echo "$LAPS_Password" | pbcopy
