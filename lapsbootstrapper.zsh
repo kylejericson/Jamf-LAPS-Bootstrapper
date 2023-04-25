@@ -1,8 +1,8 @@
 #!/bin/zsh
 # Created by Kyle Ericson and OpenAI
-# Version 1.5
+# Version 1.6
 
-dialog="/usr/local/bin/dialog"
+dialog="Dialog.app/Contents/MacOS/Dialog"
 exitCode=""
 Salt=""
 Passphrase=""
@@ -20,20 +20,6 @@ function decryptPassword() {
     /bin/echo "${1}" | /usr/bin/openssl enc -aes256 -md sha256 -d -a -A -S "${2}" -k "${3}"
 }
 
-if [[ -f "$dialog" ]]; then 
-    echo "Installed"; 
-else  
-    echo "Not Installed"
-    if [[ $(id -u) -ne 0 ]]; then
-        osascript -e 'tell app "System Events" to display dialog "This must be run as admin." giving up after (100) with title "LAPS Password Error" buttons {"Exit"} default button "Exit" with icon file "System:Library:CoreServices:CoreTypes.bundle:Contents:Resources:AlertStopIcon.icns"'
-        exit 1
-    fi
-    dialogURL=$(curl --silent --fail "https://api.github.com/repos/bartreardon/swiftDialog/releases/latest" | awk -F '"' "/browser_download_url/ && /pkg\"/ { print \$4; exit }")
-    /usr/bin/curl --location --silent "$dialogURL" -o "/tmp/Dialog.pkg"
-    /usr/sbin/installer -pkg "/tmp/Dialog.pkg" -target /
-    dialogVersion=$( /usr/local/bin/dialog --version )
-    echo "swiftDialog version ${dialogVersion} installed; proceeding..."
-fi
 
 # Define the file path for the saved credentials
 credsFile="$HOME/.jamfcred"
