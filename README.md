@@ -15,7 +15,7 @@ First, this tool assumes you have the following deployed:
 5. This tool uses Swiftdialog and is now embedded into this app version 2.1.0-4148 https://github.com/bartreardon/swiftDialog
 
 
-![](https://github.com/kylejericson/Jamf-LAPS-Bootstrapper/blob/main/Jamf%20LAPS%20Bootstrapper.gif)
+![](https://github.com/kylejericson/Jamf-LAPS-Bootstrapper/blob/main/Demo.gif)
 
 When you check the checkbox to save creds they are saved here credsFile="$HOME/.jamfcreds"
 To remove them do a rm "$HOME/.jamfcreds"
