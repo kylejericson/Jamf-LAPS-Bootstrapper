@@ -22,5 +22,7 @@ When you check the checkbox to save creds they are saved here:
 /Users/Yourusername/.jamfsp
 
 To remove them do a:
+
 rm "$HOME/.jamfcred"
+
 rm "$HOME/.jamfsp"
