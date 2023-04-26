@@ -1,6 +1,6 @@
 #!/bin/zsh
 # Created by Kyle Ericson and OpenAI
-# Version 1.6
+# Version 1.7
 
 dialog="Dialog.app/Contents/MacOS/Dialog"
 exitCode=""
@@ -19,7 +19,6 @@ function GenerateEncryptedString() {
 function decryptPassword() {
     /bin/echo "${1}" | /usr/bin/openssl enc -aes256 -md sha256 -d -a -A -S "${2}" -k "${3}"
 }
-
 
 # Define the file path for the saved credentials
 credsFile="$HOME/.jamfcred"
@@ -48,7 +47,7 @@ else
   # Trim any trailing slashes from the API URL
   apiURL=$(echo "$apiURL" | sed 's|/$||')
     
-    # Encrypt Password
+    # Encrypt Password and get values
     apiString=( $(GenerateEncryptedString "$apiPass") )
     apiEncryptedPassed=${apiString[1]}
     apiSalt=${apiString[2]}
@@ -81,13 +80,21 @@ else
    api_token=$(/usr/bin/plutil -extract token raw -o - - <<< "${authToken}")
 fi
 
+# Bearer token validation
+apiBearerTokenCheck=$(/usr/bin/curl --write-out %{http_code} --silent --output /dev/null "${apiURL}/api/v1/auth" --request GET --header "Authorization: Bearer ${api_token}")
+echo "apiBearerTokenCheck: ${apiBearerTokenCheck}; "
+  if [[ ${apiBearerTokenCheck} != 200 ]]; then
+    $dialog --title "LAPS Authorization Error" --button1text "Exit" --mini --message "Failed to get Bearer Token.\nError: ${apiBearerTokenCheck};" --icon /System/Library/CoreServices/CoreTypes.bundle/Contents/Resources/AlertStopIcon.icns -p
+    echo "Error: ${apiBearerTokenCheck}; exiting."
+    exit 1
+  fi
+
 computerID=$(/usr/bin/curl -s -H "Authorization: Bearer $api_token" -H "Accept: application/xml" "${apiURL}/JSSResource/computers/serialnumber/${serialNumber}/subset/general" | xpath -e '//computer/general/id/text()' )
 
 if [[ -z ${computerID} ]]; then
 
     echo "Error: Unable to determine computerID; exiting."
-    $dialog --title "LAPS Password Error" --button1text "Exit" --mini --message "\nComputer not found in Jamf. Please check serial number and try again." --icon /System/Library/CoreServices/CoreTypes.bundle/Contents/Resources/AlertStopIcon.icns -p
-    
+    $dialog --title "LAPS Password Error" --button1text "Exit" --mini --message "\nComputer not found in Jamf. Please check serial number and try again." --icon /System/Library/CoreServices/CoreTypes.bundle/Contents/Resources/AlertStopIcon.icns -p    
     exitCode="1"
 
 else
