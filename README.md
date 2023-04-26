@@ -17,6 +17,12 @@ First, this tool assumes you have the following deployed:
 
 ![](https://github.com/kylejericson/Jamf-LAPS-Bootstrapper/blob/main/Demo.gif)
 
+
+If you want to use a Jamf API Service account these are the only permissions required.
+
+![](https://github.com/kylejericson/Jamf-LAPS-Bootstrapper/blob/main/jamfpermissions.jpg)
+
+
 When you check the checkbox to save creds they are saved here:
 
 /Users/Yourusername/.jamfcred
