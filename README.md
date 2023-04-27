@@ -1,4 +1,7 @@
- Jamf LAPS Bootstrapper
+ Jamf LAPS Bootstrapper 
+ 
+ ![](https://github.com/kylejericson/Jamf-LAPS-Bootstrapper/blob/main/LAPS-logo.png)
+ 
  
 I wanted to make a tool to get the LAPS password from a Mac in Jamf using the free tool macOSLAPS.
 
