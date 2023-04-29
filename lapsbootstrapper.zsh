@@ -1,39 +1,33 @@
 #!/bin/zsh
 # Created by Kyle Ericson and OpenAI
-# Version 1.7
+# Version 1.9
 
 dialog="Dialog.app/Contents/MacOS/Dialog"
 exitCode=""
 Salt=""
 Passphrase=""
-
-function GenerateEncryptedString() {
-    # Usage ~$ GenerateEncryptedString "String"
-    local String="${1}"
-    local Salt=$(openssl rand -hex 8)
-    local Passphrase=$(openssl rand -hex 12)
-    local Encryption=$(echo "${String}" | openssl enc -aes256 -md sha256 -a -A -S "${Salt}" -k "${Passphrase}")
-    echo "${Encryption} ${Salt} ${Passphrase}"
-}
-
-function decryptPassword() {
-    /bin/echo "${1}" | /usr/bin/openssl enc -aes256 -md sha256 -d -a -A -S "${2}" -k "${3}"
-}
-
-# Define the file path for the saved credentials
-credsFile="$HOME/.jamfcred"
-apiSaltsPassphrase="$HOME/.jamfsp"
+jamfsettings="$HOME/Library/Application Support/jamfbootstrapper/jamfsettings.plist"
 
 # Delete old Jamf Creds file
 if [[ -f "$HOME/.jamfcreds" ]]; then
   rm -rf "$HOME/.jamfcreds"
 fi
 
+if [[ -f "$HOME/.jamfcred" ]]; then
+  rm -rf "$HOME/.jamfcred"
+fi
+
+if [[ -f "$HOME/.jamfsp" ]]; then
+  rm -rf "$HOME/.jamfsp"
+fi
+
 # Check if the credentials are already saved
-if [ -f "$credsFile" ]; then
+if [ -f "$jamfsettings" ]; then
   # Credentials are saved, so read them from the file
-  read -r apiUser apiEncryptedPassed apiURL jamfexid < "$credsFile"
-  read -r apiSalt apiPassprase < "$apiSaltsPassphrase"
+  apiUser=$(/usr/bin/defaults read {$jamfsettings} apiuser)
+  apiURL=$(/usr/bin/defaults read {$jamfsettings} jss_url)
+  jamfexid=$(/usr/bin/defaults read {$jamfsettings} jamfeaid)
+  apiPass=$(security find-generic-password -w -s "jamfBootstrapper" -a "$apiUser")
 else
   # Credentials are not saved, so prompt the user for them
 	dialogOutput=$( $dialog --message none --title "LAPS Password Bootstrapper" --icon /System/Library/CoreServices/CoreTypes.bundle/Contents/Resources/Accounts.icns --textfield "API Username",required --textfield "API Password",required,secure  --textfield "Jamf Pro URL",required --textfield "Jamf Extension Attribute ID",required --checkbox "Save Credentials" -p)
@@ -46,29 +40,27 @@ else
 
   # Trim any trailing slashes from the API URL
   apiURL=$(echo "$apiURL" | sed 's|/$||')
-    
-    # Encrypt Password and get values
-    apiString=( $(GenerateEncryptedString "$apiPass") )
-    apiEncryptedPassed=${apiString[1]}
-    apiSalt=${apiString[2]}
-    apiPassprase=${apiString[3]}
 
   # If the user chose to save the credentials, write them to the file
   if [[ "$checkbox" == *true* ]]; then
-    echo "${apiUser} ${apiEncryptedPassed} ${apiURL} ${jamfexid}" > "$credsFile"
-    echo "${apiSalt} ${apiPassprase}" > "$apiSaltsPassphrase"
+    if [[ ! -d "$HOME/Library/Application Support/jamfbootstrapper" ]]; then
+        mkdir "$HOME/Library/Application Support/jamfbootstrapper"
+        if [[ ! -f "${jamfsettings}" ]]; then
+            touch "${jamfsettings}"
+        fi
+    fi
+    security add-generic-password -s "jamfBootstrapper" -a "$apiUser" -w "$apiPass" -T /usr/bin/security
+    defaults write "${jamfsettings}" apiuser -string ${apiUser}
+    defaults write "${jamfsettings}" jss_url -string ${apiURL}
+    defaults write "${jamfsettings}" jamfeaid -string ${jamfexid}
   fi
 fi
-
-# Decrypt Password
-apiPasswordRaw=$(decryptPassword ${apiEncryptedPassed} ${apiSalt} ${apiPassprase})
-apiPassword=$(echo ${apiPasswordRaw} | sed 's/[][]//g')
 
 # Prompt the user for the computer serial number
 prompt=$($dialog --title "Enter the computer serial number" --icon /System/Library/CoreServices/CoreTypes.bundle/Contents/Resources/com.apple.imac-unibody-27.icns --textfield "Serial Number" --small --message none -p)
 serialNumber=$(echo $prompt | grep "Serial Number" | awk -F " : " '{print $NF}')
 
-BASIC=$(echo -n "${apiUser}":"${apiPassword}" | base64)
+BASIC=$(echo -n "${apiUser}":"${apiPass}" | base64)
 
 #  Request API token
 authToken=$(/usr/bin/curl -s -H "Authorization: Basic ${BASIC}" -X POST "${apiURL}/api/v1/auth/token")
