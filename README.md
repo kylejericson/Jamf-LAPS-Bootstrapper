@@ -27,13 +27,4 @@ If you want to use a Jamf API Service account these are the only permissions req
 
 
 When you check the checkbox to save creds they are saved here:
-
-/Users/Yourusername/.jamfcred
-
-/Users/Yourusername/.jamfsp
-
-To remove them do a:
-
-rm "$HOME/.jamfcred"
-
-rm "$HOME/.jamfsp"
+macOS Keychain and $HOME/Library/Application Support/jamfbootstrapper
