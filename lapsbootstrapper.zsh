@@ -1,12 +1,14 @@
 #!/bin/zsh
 # Created by Kyle Ericson and OpenAI
-# Version 1.9
+# Version 2.0
 
 dialog="Dialog.app/Contents/MacOS/Dialog"
 exitCode=""
 Salt=""
 Passphrase=""
 jamfsettings="$HOME/Library/Application Support/jamfbootstrapper/jamfsettings.plist"
+logo1="LAPS-logo.png"
+logo2="mac.png"
 
 # Delete old Jamf Creds file
 if [[ -f "$HOME/.jamfcreds" ]]; then
@@ -30,7 +32,7 @@ if [ -f "$jamfsettings" ]; then
   apiPass=$(security find-generic-password -w -s "jamfBootstrapper" -a "$apiUser")
 else
   # Credentials are not saved, so prompt the user for them
-	dialogOutput=$( $dialog --message none --title "LAPS Password Bootstrapper" --icon /System/Library/CoreServices/CoreTypes.bundle/Contents/Resources/Accounts.icns --textfield "API Username",required --textfield "API Password",required,secure  --textfield "Jamf Pro URL",required --textfield "Jamf Extension Attribute ID",required --checkbox "Save Credentials" -p)
+	dialogOutput=$( $dialog --message none --title "LAPS Password Bootstrapper" --icon $logo1 --textfield "API Username",required --textfield "API Password",required,secure  --textfield "Jamf Pro URL",required --textfield "Jamf Extension Attribute ID",required --checkbox "Save Credentials" -p)
 
 	apiUser=$(echo $dialogOutput | grep "API Username" | awk -F " : " '{print $NF}')
 	apiPass=$(echo $dialogOutput | grep "API Password" | awk -F " : " '{print $NF}')
@@ -57,7 +59,7 @@ else
 fi
 
 # Prompt the user for the computer serial number
-prompt=$($dialog --title "Enter the computer serial number" --icon /System/Library/CoreServices/CoreTypes.bundle/Contents/Resources/com.apple.imac-unibody-27.icns --textfield "Serial Number" --small --message none -p)
+prompt=$($dialog --title "Enter the computer serial number" --icon $logo2 --textfield "Serial Number" --small --message none -p)
 serialNumber=$(echo $prompt | grep "Serial Number" | awk -F " : " '{print $NF}')
 
 BASIC=$(echo -n "${apiUser}":"${apiPass}" | base64)
